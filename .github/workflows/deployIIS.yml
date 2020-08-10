@@ -1,0 +1,39 @@
+name: .Net Full Framework Build
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+
+  build:
+
+    runs-on: self-hosted
+    
+    env:
+      Solution_Name: 'AzureNaPraticaDG.sln'                      
+      buildPlatform: 'Any CPU'
+      buildConfiguration: 'Release'
+    
+    steps:
+    - name: Mostra varaivel
+      run: echo $env:Path_MsDeploy
+      
+    - name: Checkout
+      uses: actions/checkout@v2      
+      
+    - name: Setup Nuget.exe
+      uses: warrenbuckley/Setup-Nuget@v1
+      
+    - name: Restore Packages
+      run: nuget restore $env:Solution_Name
+  
+    - name: Setup MSbuild.exe
+      uses: warrenbuckley/Setup-MSBuild@v1
+      
+    - name: Build using MSBuild
+      run: msbuild $env:Solution_Name /p:platform=$env:buildPlatform /p:Configuration=$env:buildConfiguration /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation='C:\myapp'
+          
+    - name: Run MSDeploy.exe
+      run: msdeploy -verb:sync -source:package=C:\myapp\AzureNaPraticaDG.zip -dest:auto -setParam:name=`'IIS Web Application Name`',value='WebAppSelfHosted' -enableRule:DoNotDeleteRule
