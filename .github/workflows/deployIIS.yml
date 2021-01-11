@@ -9,9 +9,10 @@ jobs:
 
   build:
 
-    runs-on: windows-latest
+    runs-on: DeployIIS
     
     env:
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
       Solution_Name: 'AzureNaPraticaDG.sln'                      
       buildPlatform: 'Any CPU'
       buildConfiguration: 'Release'
