@@ -13,29 +13,27 @@ jobs:
     runs-on: DeployIIS
     
     env:
-      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
       Solution_Name: 'AzureNaPraticaDG.sln'                      
       buildPlatform: 'Any CPU'
       buildConfiguration: 'Release'
+      PACKAGE_LOCATION: c:\myapp
+      WEB_SITE_NAME: WebAppSelfHosted
     
-    steps:
-    - name: Mostra varaivel
-      run: echo $env:Path_MsDeploy
-      
+    steps:    
     - name: Checkout
       uses: actions/checkout@v2      
-      
-    - name: Setup Nuget.exe
-      uses: warrenbuckley/Setup-Nuget@v1
-      
+  
+    - name: Setup NuGet.exe for use with actions
+      uses: NuGet/setup-nuget@v1.0.5
+     
     - name: Restore Packages
       run: nuget restore $env:Solution_Name
   
-    - name: Setup MSbuild.exe
-      uses: warrenbuckley/Setup-MSBuild@v1
-      
+    - name: setup-msbuild
+      uses: microsoft/setup-msbuild@v1.0.2
+
     - name: Build using MSBuild
-      run: msbuild $env:Solution_Name /p:platform=$env:buildPlatform /p:Configuration=$env:buildConfiguration /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation='C:\myapp'
+      run: msbuild $env:Solution_Name /p:platform=$env:buildPlatform /p:Configuration=$env:buildConfiguration /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation=$env:PACKAGE_LOCATION
           
     - name: Run MSDeploy.exe
-      run: msdeploy -verb:sync -source:package=C:\myapp\AzureNaPraticaDG.zip -dest:auto -setParam:name=`'IIS Web Application Name`',value='WebAppSelfHosted' -enableRule:DoNotDeleteRule
+      run: msdeploy -verb:sync -source:package=$env:PACKAGE_LOCATION\AzureNaPraticaDG.zip -dest:auto -setParam:name=`'IIS Web Application Name`',value=$env:WEB_SITE_NAME -enableRule:DoNotDeleteRule
